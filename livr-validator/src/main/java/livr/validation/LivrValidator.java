@@ -1,9 +1,11 @@
 package livr.validation;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 
 import javax.validation.ConstraintValidator;
@@ -38,8 +40,10 @@ public class LivrValidator implements ConstraintValidator<LivrSchema, Object> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void initialize(LivrSchema constraintAnnotation) {
+		Properties prop = getProperties(constraintAnnotation);
 		try {
-			String schema = SchemaLoader.load(constraintAnnotation.schema());
+
+			String schema = SchemaLoader.load(constraintAnnotation.schema(), prop);
 			LivrRule[] rules = constraintAnnotation.rules();
 
 			Map<String, Function> r = new HashMap<>();
@@ -51,6 +55,19 @@ public class LivrValidator implements ConstraintValidator<LivrSchema, Object> {
 		} catch (ParseException | InstantiationException | IllegalAccessException e) {
 			log.error(e.getMessage(), e.getCause());
 		}
+	}
+
+	private Properties getProperties(LivrSchema constraintAnnotation) {
+		Properties prop = new Properties();
+		InputStream input = null;
+		try {
+			input = getClass().getClassLoader().getResourceAsStream(constraintAnnotation.properties());
+			prop.load(input);
+		} catch (Exception ex) {
+			log.debug("properties file couldn't be loaded");
+			return null;
+		}
+		return prop;
 	}
 
 	@SuppressWarnings("unchecked")

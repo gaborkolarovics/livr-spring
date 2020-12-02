@@ -51,6 +51,8 @@ public @interface LivrSchema {
 
 	String schema();
 
+	String properties() default "application.properties";
+
 	boolean autotrim() default false;
 
 	LivrRule[] rules() default {};
